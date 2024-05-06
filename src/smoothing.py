@@ -117,7 +117,7 @@ def computeNewPoints(datapoints):
 
         elif(col1 and col2):
             new_point = M
-            new_points.append([new_point[0], new_point[1]] + [euclidianDistance(p1, p2)/t12, datapoints[i][3] + t12delta])
+            new_points.append([new_point[0], new_point[1], euclidianDistance(p1, p2), datapoints[i][3] + t12delta])
             c2 = (0, 0)
             r2 = float('inf')
             continue
@@ -140,7 +140,7 @@ def computeNewPoints(datapoints):
 
         if(c_avg1 == -1 or c_avg2 == -1):
             new_point = M
-            new_points.append([new_point[0], new_point[1]] + [euclidianDistance(p1, p2)/t12, datapoints[i][3] + t12delta])
+            new_points.append([new_point[0], new_point[1], euclidianDistance(p1, p2), datapoints[i][3] + t12delta])
             continue
 
         # if different oriented curvature in the sequential circles than take the shape of the one with the smallest radius
@@ -153,7 +153,7 @@ def computeNewPoints(datapoints):
         new_point_2 = np.array(c_avg) + (np.array(M)-np.array(c_avg))*(-d)
 
         new_point = closestPoint(new_point_1, new_point_2, p1, p2)
-        new_point = [new_point[0], new_point[1], r*getAngle(p1, c_avg, p2)/t12, datapoints[i][3] + t12delta]
+        new_point = [new_point[0], new_point[1], r*getAngle(p1, c_avg, p2), datapoints[i][3] + t12delta]
 
         new_points.append(new_point)
 
@@ -166,8 +166,14 @@ def performSmoothing(datapoints, iterations):
     pLast = [2*datapoints[-1][0] - datapoints[-2][0], 2*datapoints[-1][1] - datapoints[-2][1], 0, datapoints[-1][3] + (datapoints[-1][3] - datapoints[-2][3])]
     midFirst = midPoint(pFirst, datapoints[0])
     midLast = midPoint(datapoints[-1], pLast)
-    midFirst = [midFirst[0], midFirst[1], 0, datapoints[0][3] - (datapoints[1][3] - datapoints[0][3])/2]
-    midLast = [midLast[0], midLast[1], 0, datapoints[-1][3] + (datapoints[-1][3] - datapoints[-2][3])/2]
+
+    # midFirst = [midFirst[0], midFirst[1], 0, datapoints[0][3] - (datapoints[1][3] - datapoints[0][3])/2]
+    # midLast = [midLast[0], midLast[1], 0, datapoints[-1][3] + (datapoints[-1][3] - datapoints[-2][3])/2]
+
+    midFirst = [midFirst[0], midFirst[1], 2*euclidianDistance(midFirst, pFirst), datapoints[0][3] - (datapoints[1][3] - datapoints[0][3])/2]
+    midLast = [midLast[0], midLast[1], 2*euclidianDistance(midLast, pLast), datapoints[-1][3] + (datapoints[-1][3] - datapoints[-2][3])/2]
+    pFirst[2] = 2*euclidianDistance(pFirst, midFirst)
+    pLast[2] = 2*euclidianDistance(pLast, midLast)
 
     for _ in range(0, iterations):
         for i in range(0, 2):
