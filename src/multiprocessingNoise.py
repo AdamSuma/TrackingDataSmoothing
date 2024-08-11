@@ -107,7 +107,7 @@ def perTrajectory(trajectory):
     dtwSmooth = np.zeros(8, float)
     trajectory = pd.DataFrame(trajectory)
     trajectory.columns = ['x', 'y', 'speed', 'time', 'frame_id']
-    noisyTrajectory = applyNoise(trajectory.copy(), ['normal', 0, 0.8], ['normal', 0, 0.8])
+    noisyTrajectory = applyNoise(trajectory.copy(), ['normal', 0, 1], ['normal', 0, 3])
 
     smoothTrajs = [
         performSmoothing(trajectory[['x', 'y', 'speed', 'time', 'frame_id']].values.tolist(), 1),
