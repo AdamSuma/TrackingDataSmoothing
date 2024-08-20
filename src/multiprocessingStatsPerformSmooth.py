@@ -35,12 +35,16 @@ small_its = [
     2,
     5, 
     10,
+    25,
+    30,
+    40,
+    50,
 ]
 big_its = [
-    50,
-    100, 
-    150,
-    200
+    # 50,
+    # 100, 
+    # 150,
+    # 200
 ]
 def perTraj(args):
     player = args[0]
@@ -260,7 +264,6 @@ if __name__ == '__main__':
                 smoothDataFrames.append(playerSmoothDataFrames.copy())
                 
         originalDF = smoothDataFrames[0].drop(columns=['arc_length'])
-        smoothDataFrames.pop(0)
 
         originaltargetedPlayerDF = pd.DataFrame(originalDF[originalDF['object_id'] == str(targetedPlayerID)])
         # originaltargetedPlayerDF = pd.merge(originaltargetedPlayerDF, frames, how='right', on=['frame_id'])
@@ -288,6 +291,8 @@ if __name__ == '__main__':
         # if timediff is larger than 200, put speed to NaN
         originaltargetedPlayerDF.loc[originaltargetedPlayerDF['timediff'] > 80, 'speed'] = np.nan
 
+        smoothDataFrames[0] = originaltargetedPlayerDF
+
         print(extractMetrics(originaltargetedPlayerDF))
 
         metrics = []
@@ -297,7 +302,7 @@ if __name__ == '__main__':
         maxSpeedList = list(map(lambda m: m['maxSpeed'], metrics))
 
         metrics = pd.DataFrame(metrics)
-        metrics['iterations'] = small_its[1:] + big_its
+        metrics['iterations'] = small_its + big_its
         metrics['name'] = name
         metrics = metrics[['name', 'iterations', 'maxSpeed', 'maximumSpeedSustained', 'sprintCount', 'distanceCovered']]
 
@@ -306,5 +311,5 @@ if __name__ == '__main__':
         print(f'Player {name} took {stop_time_player - start_time_player} seconds')   
         print(metrics)
 
-    with open('./src/dataframes/totalMetricsStatsPerform.pkl', 'wb') as file:
+    with open('./src/dataframes/totalMetricsStatsPerformSmallerIts.pkl', 'wb') as file:
         pickle.dump(totalMetrics, file)
