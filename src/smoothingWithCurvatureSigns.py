@@ -83,19 +83,17 @@ def areCollinear(p1, p2, p3):
 def midPoint(p1, p2):
     return ((p1[0] + p2[0])/2, (p1[1] + p2[1])/2)
 
-def getAngle(p1, p2, p3):
-    a = np.array([p1[0], p1[1]])
-    b = np.array([p2[0], p2[1]])
-    c = np.array([p3[0], p3[1]])
-    ba = a - b
-    bc = c - b
+def getAngle(p1, c, p2):
+    cross = (p1[0]-c[0])*(p2[1]-c[1]) - (p1[1]-c[1])*(p2[0]-c[0])
+    sin = cross/(euclidianDistance(c, p1)*euclidianDistance(c, p2))
+    theta = np.arcsin(sin)
+    if not(theta <= math.pi and theta >= (-1)*math.pi):
+        print(f'p1: {p1}, c: {c}, p2: {p2}, sin: {sin}')
+        assert(False)
+    return np.arcsin(sin)
 
-    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-    angle = np.arccos(cosine_angle)
-    # print(f'Cosine Angle {cosine_angle}')
-    # print(f'ba: {ba}, bc: {bc}')
-    assert(angle <= 2*math.pi and angle >= 0)
-    return angle
+def rotateVector(v, theta):
+    return (v[0]*math.cos(theta) - v[1]*math.sin(theta), v[0]*math.sin(theta) + v[1]*math.cos(theta))
 
 def computeNewPoints(datapoints):
     new_points = []
@@ -155,7 +153,7 @@ def computeNewPoints(datapoints):
             new_point = M
             new_points.append([new_point[0], new_point[1], euclidianDistance(p1, p2), datapoints[i][3] + t12delta])
             continue
-
+        
         cS1 = getMovementSign(c_avg1, p1, p2)
         cS2 = getMovementSign(c_avg2, p1, p2)
         if not((cS1 >= 0 and cS2 <= 0) or (cS1 <= 0 and cS2 >= 0)):
@@ -166,17 +164,19 @@ def computeNewPoints(datapoints):
         else:
             c_avg = c_avg2
 
+        theta = getAngle(p1, c_avg, p2)
         # computing new point
-        d = abs(r)/euclidianDistance(M, c_avg)
-        new_point_1 = np.array(c_avg) + (np.array(M)-np.array(c_avg))*d
-        new_point_2 = np.array(c_avg) + (np.array(M)-np.array(c_avg))*(-d)
+        # d = abs(r)/euclidianDistance(M, c_avg)
+        I = rotateVector([p1[0]-c_avg[0], p1[1]-c_avg[1]], theta/2)
+        # new_point_1 = np.array(c_avg) + (np.array(M)-np.array(c_avg))*d
+        # new_point_2 = np.array(c_avg) + (np.array(M)-np.array(c_avg))*(-d)
 
         # print(p1, c_avg, p2)
         # print(f'Center {c_avg}')
         # print(f'Radius {r}')
 
-        new_point = closestPoint(new_point_1, new_point_2, p1, p2)
-        new_point = [new_point[0], new_point[1], abs(r)*getAngle(p1, c_avg, p2), datapoints[i][3] + t12delta]
+        new_point = [I[0] + c_avg[0], I[1] + c_avg[1]]
+        new_point = [new_point[0], new_point[1], abs(r)*abs(theta), datapoints[i][3] + t12delta]
 
         new_points.append(new_point)
 
