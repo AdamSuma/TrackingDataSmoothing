@@ -14,6 +14,7 @@ import time
 from multiprocessing import Pool
 import csv 
 
+# Format: (last_name, skillcorner_id, statsperform_id)
 players = [
     ('Barry', 584967, 1397296),         # Thierno Barry
     ('Avdullahu', 659794, 1447729),     # Leon Avdullahu

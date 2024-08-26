@@ -29,7 +29,8 @@ def getCircle(points):
 
     return ((Ux, Uy), r)
 
-def getMovementSign(c, p1, p2): # takes as input the center of the circle and two points on the circle, returns -1 if the movement is clockwise and 1 if it is counterclockwise
+def getMovementSign(c, p1, p2): # takes as input the center of the circle
+    # and two points on the circle, returns -1 if the movement is clockwise and 1 if it is counterclockwise
     return -1 if (p1[0]-c[0])*(p2[1]-c[1]) - (p1[1]-c[1])*(p2[0]-c[0]) < 0 else 1
 
 def getCircleIntersections(c0, r0, c1, r1):
@@ -104,7 +105,8 @@ def computeNewPoints(datapoints):
         if(i == 1):
             p1 = trajectory[i]
             p2 = trajectory[i+1]
-            # We assume that between frames the time interval is kept constant. If this is not the case move t12 and t12delta outside of the if statement
+            # We assume that between frames the time interval is kept constant. 
+            # If this is not the case move t12 and t12delta outside of the if statement
             t12 = (datapoints[i+1][3] - datapoints[i][3]).total_seconds()
             t12delta = timedelta(seconds=t12/2)
             col1 = areCollinear(trajectory[i-1], p1, p2)            
@@ -124,6 +126,10 @@ def computeNewPoints(datapoints):
             if(i == 1):
                 c1, r1 = getCircle(trajectory[i-1: i+2])
             c2, r2 = getCircle(trajectory[i: i+3])
+            if(abs(r1 + r2) < 10e-12):
+                new_point = M
+                new_points.append([new_point[0], new_point[1], euclidianDistance(p1, p2), datapoints[i][3] + t12delta])
+                continue
             r = 2*r1*r2/(r1+r2)
 
         elif(col1 and col2):
@@ -149,15 +155,10 @@ def computeNewPoints(datapoints):
         # intersecting the averaging circles
         c_avg1, c_avg2 = getCircleIntersections(p1, abs(r), p2, abs(r))
 
-        if(c_avg1 == -1 or c_avg2 == -1 or abs(r) > 10e6):
+        if(c_avg1 == -1 or c_avg2 == -1 or abs(r) > 10e8):
             new_point = M
             new_points.append([new_point[0], new_point[1], euclidianDistance(p1, p2), datapoints[i][3] + t12delta])
             continue
-        
-        cS1 = getMovementSign(c_avg1, p1, p2)
-        cS2 = getMovementSign(c_avg2, p1, p2)
-        if not((cS1 >= 0 and cS2 <= 0) or (cS1 <= 0 and cS2 >= 0)):
-            assert(False)
 
         if(getMovementSign(c_avg1, p1, p2)*r >= 0):
             c_avg = c_avg1
@@ -165,15 +166,7 @@ def computeNewPoints(datapoints):
             c_avg = c_avg2
 
         theta = getAngle(p1, c_avg, p2)
-        # computing new point
-        # d = abs(r)/euclidianDistance(M, c_avg)
         I = rotateVector([p1[0]-c_avg[0], p1[1]-c_avg[1]], theta/2)
-        # new_point_1 = np.array(c_avg) + (np.array(M)-np.array(c_avg))*d
-        # new_point_2 = np.array(c_avg) + (np.array(M)-np.array(c_avg))*(-d)
-
-        # print(p1, c_avg, p2)
-        # print(f'Center {c_avg}')
-        # print(f'Radius {r}')
 
         new_point = [I[0] + c_avg[0], I[1] + c_avg[1]]
         new_point = [new_point[0], new_point[1], abs(r)*abs(theta), datapoints[i][3] + t12delta]
@@ -189,9 +182,6 @@ def performSmoothing(datapoints, iterations):
     pLast = [2*datapoints[-1][0] - datapoints[-2][0], 2*datapoints[-1][1] - datapoints[-2][1], 0, datapoints[-1][3] + (datapoints[-1][3] - datapoints[-2][3])]
     midFirst = midPoint(pFirst, datapoints[0])
     midLast = midPoint(datapoints[-1], pLast)
-
-    # midFirst = [midFirst[0], midFirst[1], 0, datapoints[0][3] - (datapoints[1][3] - datapoints[0][3])/2]
-    # midLast = [midLast[0], midLast[1], 0, datapoints[-1][3] + (datapoints[-1][3] - datapoints[-2][3])/2]
 
     midFirst = [midFirst[0], midFirst[1], 2*euclidianDistance(midFirst, pFirst), datapoints[0][3] - (datapoints[1][3] - datapoints[0][3])/2]
     midLast = [midLast[0], midLast[1], 2*euclidianDistance(midLast, pLast), datapoints[-1][3] + (datapoints[-1][3] - datapoints[-2][3])/2]

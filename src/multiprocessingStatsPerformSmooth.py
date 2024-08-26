@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from math import isnan
-from smoothing import performSmoothing, euclidianDistance
+from smoothingWithCurvatureSigns import performSmoothing, euclidianDistance
 import time
 from multiprocessing import Pool
 from preprocessingStats import read_partially, read_csv_partially, getTrajectories, getSkillcornerTrajectories
@@ -311,5 +311,5 @@ if __name__ == '__main__':
         print(f'Player {name} took {stop_time_player - start_time_player} seconds')   
         print(metrics)
 
-    with open('./src/dataframes/totalMetricsStatsPerformSmallerIts.pkl', 'wb') as file:
+    with open('./src/dataframes/withCurvatureSign/totalMetricsStatsPerformSmallerIts.pkl', 'wb') as file:
         pickle.dump(totalMetrics, file)

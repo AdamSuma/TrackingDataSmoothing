@@ -1,6 +1,6 @@
 from multiprocessing import Pool
 
-from smoothing import performSmoothing
+from smoothingWithCurvatureSigns import performSmoothing
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -107,7 +107,7 @@ def perTrajectory(trajectory):
     dtwSmooth = np.zeros(8, float)
     trajectory = pd.DataFrame(trajectory)
     trajectory.columns = ['x', 'y', 'speed', 'time', 'frame_id']
-    noisyTrajectory = applyNoise(trajectory.copy(), ['normal', 0, 1], ['normal', 0, 3])
+    noisyTrajectory = applyNoise(trajectory.copy(), ['normal', 0, 0.6], ['normal', 0, 1.2])
 
     smoothTrajs = [
         performSmoothing(trajectory[['x', 'y', 'speed', 'time', 'frame_id']].values.tolist(), 1),
